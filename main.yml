@@ -1,15 +1,15 @@
 AWSTemplateFormatVersion:'2010-09-09'
 
 Parameters:
-      EC2InstanceType:
-      Type: String
-      EC2AMI:
-        Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
-        Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+  EC2InstanceType:
+    Type: String
+  EC2AMI:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
 
 Resources:
 
-  SecurityGroup
+  SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: !Sub 'Internal Security group for ${AWS::StackName}'
