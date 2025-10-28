@@ -1,121 +1,121 @@
 AWSTemplateFormatVersion:'2010-09-09'
 
-  Parameters:
-    EC2InstanceType:
-    Type: String
-    EC2AMI:
-      Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
-      Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+Parameters:
+      EC2InstanceType:
+      Type: String
+      EC2AMI:
+        Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+        Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
 
-  Resources:
+Resources:
 
-    SecurityGroup
-      Type: AWS::EC2::SecurityGroup
-      Properties:
-        GroupDescription: !Sub 'Internal Security group for ${AWS::StackName}'
-        SecurityGroupIngress:
-          - IpProtocol: tcp
-            FromPort: 8080
-            ToPort: 8080
-            CidrIp: 0.0.0.0/0
-          - IpProtocol: tcp
-            FromPort: 22
-            ToPort: 22
-            CidrIp: 0.0.0.0/0
-        Tags:
-          - Key: Name
-            Value: !Ref AWS::StackName
+  SecurityGroup
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub 'Internal Security group for ${AWS::StackName}'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
   
-    InstanceRole:
-      Type: "AWS::IAM::Role"
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            Effect: Allow
-            Principal:
-              Service:
-                - "ec2.amazonaws.com"
-            Action: sts:AssumeRole
-        ManagedPolicyArns:
-          - arn:aws:iam::aws:policy/CloudWatchFullAccessV2
-        Tags:
-          - Key: Name
-            Value: !Ref AWS::StackName
+  InstanceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service:
+              - "ec2.amazonaws.com"
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchFullAccessV2
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
 
-    InstanceProfile:
-      Type: "AWS::IAM::InstanceProfile"
-      Properties:
-        Roles:
-          - Ref: InstanceRole
+  InstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Roles:
+        - Ref: InstanceRole
   
-    Instance:
-      Type: AWS::EC2::Instance
-      CreationPolicy: 
-        ResourceSignal:
-          Timeout: PT15M
-          Count: 1
-      Metadata:
-        AWS::CloudFormation::Init:
-          config:
-            packages: 
-              yum:
-                wget: []
-                unzip: []
-      Properties:
-        ImageId: !Ref EC2AMI
-        InstanceType: !Ref EC2InstanceType
-        IamInstanceProfile: !Ref InstanceProfile
-        Monitoring: true
-        SecurityGroupIds:
-          - !GetAtt SecurityGroup.GroupId 
-        UserData:
-          Fn::Base64: !Sub |
+  Instance:
+    Type: AWS::EC2::Instance
+    CreationPolicy: 
+      ResourceSignal:
+        Timeout: PT15M
+        Count: 1
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          packages: 
+            yum:
+              wget: []
+              unzip: []
+    Properties:
+      ImageId: !Ref EC2AMI
+      InstanceType: !Ref EC2InstanceType
+      IamInstanceProfile: !Ref InstanceProfile
+      Monitoring: true
+      SecurityGroupIds:
+        - !GetAtt SecurityGroup.GroupId 
+      UserData:
+        Fn::Base64: !Sub |
 
-          exec > /tmp/userdata.log 2>&1 
+        exec > /tmp/userdata.log 2>&1 
 
-          yum -y update
+        yum -y update
 
-          yum install -y aws-cfn-bootstrap
+        yum install -y aws-cfn-bootstrap
 
 
-          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --region ${AWS::Region} --resource Instance 
+        /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --region ${AWS::Region} --resource Instance 
 
-          cat > /tmp/install_script.sh << EOF 
-          
-          echo "Setting up NodeJS Environment"
-          curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
-
-          
-          . /home/ec2-user/.nvm/nvm.sh
-          . /home/ec2-user/.bashrc
-
-          
-          nvm alias default v12.7.0
-          nvm install v12.7.0
-          nvm use v12.7.0
-
-          
-          wget https://github.com/krishnachaitanya9984/aws-bootstrap/archive/master.zip 
-          unzip master.zip
-          mv aws-bootstrap-master app
-
-          
-          mkdir -p /home/ec2-user/app/logs
-
-          
-          cd app
-          npm install
-          npm start
-        EOF
-
-        chown ec2-user:ec2-user /tmp/install_script.sh && chmod a+x /tmp/install_script.sh
-        sleep 1; su - ec2-user -c "/tmp/install_script.sh" 
+        cat > /tmp/install_script.sh << EOF 
+        
+        echo "Setting up NodeJS Environment"
+        curl https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
 
         
-        /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --region ${AWS::Region} --resource Instance 
-        Tags:
-          - Key: Name
-            Value: !Ref AWS::StackName
+        . /home/ec2-user/.nvm/nvm.sh
+        . /home/ec2-user/.bashrc
 
-  Outputs:
+        
+        nvm alias default v12.7.0
+        nvm install v12.7.0
+        nvm use v12.7.0
+
+        
+        wget https://github.com/krishnachaitanya9984/aws-bootstrap/archive/master.zip 
+        unzip master.zip
+        mv aws-bootstrap-master app
+
+        
+        mkdir -p /home/ec2-user/app/logs
+
+        
+        cd app
+        npm install
+        npm start
+      EOF
+
+      chown ec2-user:ec2-user /tmp/install_script.sh && chmod a+x /tmp/install_script.sh
+      sleep 1; su - ec2-user -c "/tmp/install_script.sh" 
+
+      
+      /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --region ${AWS::Region} --resource Instance 
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+Outputs:
