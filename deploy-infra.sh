@@ -16,6 +16,8 @@ GH_BRANCH=master
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --profile $CLI_PROFILE --query "Account" --output text)
 CODEPIPELINE_BUCKET="$STACK_NAME-$REGION-codepipeline-$AWS_ACCOUNT_ID"
 
+echo $CODEPIPELINE_BUCKET
+
 echo -e "\n\n=========== Deploying setup.yml ==========="
 aws cloudformation deploy \
   --region $REGION \
