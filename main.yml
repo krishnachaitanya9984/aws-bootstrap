@@ -57,7 +57,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/CloudWatchFullAccessV2
         - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy
-       Policies:
+      Policies:
         - PolicyName: ec2DescribeTags
           PolicyDocument:
             Version: 2012-10-17
