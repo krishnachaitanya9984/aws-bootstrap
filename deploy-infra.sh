@@ -48,7 +48,5 @@ if [ $? -eq 0 ]; then
   echo -e "\n\n=========== Stack Outputs ==========="
   aws cloudformation list-exports \
     --profile $CLI_PROFILE \
-    --region $REGION \
-    --query "Exports[?Name=='InstanceEndpoint'].Value" \
-    --output text
+    --query "Exports[?ends_with(Name,'LBEndpoint')].Value"
 fi
