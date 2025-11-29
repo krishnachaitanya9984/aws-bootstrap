@@ -184,7 +184,8 @@ Resources:
 
   StagingDeploymentGroup:
     Type: AWS::CodeDeploy::DeploymentGroup
-    DependsOn: Instance
+    DependsOn: 
+      - ScalingGroup
     Properties:
       DeploymentGroupName: staging
       ApplicationName: !Ref DeploymentApplication
