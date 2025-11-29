@@ -433,7 +433,7 @@ Resources:
 
 
 Outputs:
-LBEndpoint:
+  LBEndpoint:
     Description: The DNS name for the LB
     Value: !Sub "http://${LoadBalancer.DNSName}:80"
     Export:
